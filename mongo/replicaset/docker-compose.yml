@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mongo1:
+    image: mongo:6
+    container_name: mongo1
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./mongo1/mongo.conf:/etc/mongo/mongod.conf
+      - ./init-replica.js:/init-replica.js
+    command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
+    networks:
+      - mongo-cluster
+
+  mongo2:
+    image: mongo:6
+    container_name: mongo2
+    ports:
+      - "27019:27017"
+    volumes:
+      - ./mongo2/mongo.conf:/etc/mongo/mongod.conf
+    command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
+    networks:
+      - mongo-cluster
+
+  mongo3:
+    image: mongo:6
+    container_name: mongo3
+    ports:
+      - "27020:27017"
+    volumes:
+      - ./mongo3/mongo.conf:/etc/mongo/mongod.conf
+    command: ["mongod", "--config", "/etc/mongo/mongod.conf"]
+    networks:
+      - mongo-cluster
+
+  app:
+    build: ../../integration/python
+    container_name: mongo-python-app
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    networks:
+      - mongo-cluster
+
+
+networks:
+  mongo-cluster:
